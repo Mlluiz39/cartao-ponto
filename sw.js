@@ -1,4 +1,4 @@
-const CACHE = 'cartao-ponto-v1';
+const CACHE = 'cartao-ponto-v2';
 const ASSETS = [
   './',
   './index.html',

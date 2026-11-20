@@ -22,6 +22,53 @@ const DEFAULT_CONFIG = {
   schedule: '6 x 1 - segunda a sábado - feriados folga'
 };
 
+const SAMPLE_RECORDS = [
+  { key: '2026-11-10', in: '05:51', out: '14:14' },
+  { key: '2026-11-11', in: '05:55', out: '14:22' },
+  { key: '2026-11-12', in: '05:58', out: '15:30' },
+  { key: '2026-11-13', in: '05:58', out: '15:16' },
+  { key: '2026-11-14', in: '06:00', out: '15:08' },
+  { key: '2026-11-16', in: '06:02', out: '15:45' },
+  { key: '2026-11-17', in: '06:00', out: '16:21' },
+  { key: '2026-11-18', in: '07:00', out: '16:37' }
+];
+
+function createSamplePunches() {
+  const punches = [];
+  SAMPLE_RECORDS.forEach(({ key, in: inTime, out: outTime }) => {
+    const [year, month, day] = key.split('-').map(Number);
+    const [inH, inM] = inTime.split(':').map(Number);
+    const [outH, outM] = outTime.split(':').map(Number);
+
+    punches.push({
+      id: uid(),
+      dateKey: key,
+      ts: new Date(year, month - 1, day, inH, inM, 0, 0).toISOString(),
+      type: 'in',
+      lat: null,
+      lng: null,
+      accuracy: null,
+      distance: null,
+      place: '',
+      source: 'manual'
+    });
+
+    punches.push({
+      id: uid(),
+      dateKey: key,
+      ts: new Date(year, month - 1, day, outH, outM, 0, 0).toISOString(),
+      type: 'out',
+      lat: null,
+      lng: null,
+      accuracy: null,
+      distance: null,
+      place: '',
+      source: 'manual'
+    });
+  });
+  return punches;
+}
+
 let state = loadState();
 const boot = new Date();
 let viewMonth = { year: boot.getFullYear(), month: boot.getMonth() };
@@ -108,15 +155,18 @@ function toast(message) {
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { config: { ...DEFAULT_CONFIG }, punches: [] };
+    if (!raw) return { config: { ...DEFAULT_CONFIG }, punches: createSamplePunches() };
     const data = JSON.parse(raw);
+    const punches = Array.isArray(data.punches) && data.punches.length > 0
+      ? data.punches
+      : createSamplePunches();
     return {
       config: { ...DEFAULT_CONFIG, ...(data.config || {}) },
-      punches: Array.isArray(data.punches) ? data.punches : []
+      punches
     };
   } catch (error) {
     console.warn('Não foi possível ler os dados salvos.', error);
-    return { config: { ...DEFAULT_CONFIG }, punches: [] };
+    return { config: { ...DEFAULT_CONFIG }, punches: createSamplePunches() };
   }
 }
 
@@ -866,6 +916,29 @@ function init() {
   $('#todayList').addEventListener('change', onTodayChange);
   $('#todayList').addEventListener('click', onTodayClick);
   $('#daysRoot').addEventListener('click', onDaysClick);
+
+  const loadSampleBtn = $('#loadSampleBtn');
+  if (loadSampleBtn) {
+    loadSampleBtn.addEventListener('click', () => {
+      const sample = createSamplePunches();
+      const sampleDates = new Set(SAMPLE_RECORDS.map((r) => r.key));
+      state.punches = state.punches.filter((p) => !sampleDates.has(p.dateKey)).concat(sample);
+      saveState();
+      refreshAll();
+      toast('Marcações de exemplo de Novembro/2026 carregadas!');
+    });
+  }
+
+  const clearAllBtn = $('#clearAllBtn');
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener('click', () => {
+      if (!confirm('Deseja apagar todas as batidas registradas?')) return;
+      state.punches = [];
+      saveState();
+      refreshAll();
+      toast('Todas as batidas foram apagadas.');
+    });
+  }
 
   const tick = () => {
     const clock = $('#clock');
