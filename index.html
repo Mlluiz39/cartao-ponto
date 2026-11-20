@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Cartão de Ponto</title>
+  <meta name="description" content="Registro de ponto com data, hora e localização, e cartão de ponto pronto para imprimir." />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8" />
+          <path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+        <span>Cartão de Ponto</span>
+      </div>
+      <div class="header-clock" id="clock">--:--:--</div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="view-punch" class="view">
+      <div class="status-card neutral" id="statusCard"></div>
+
+      <button class="punch-btn" id="punchBtn" type="button" disabled>Registrar ponto</button>
+      <p class="hint" id="punchHint"></p>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Registros de hoje</h2>
+          <span class="panel-date" id="todayLabel"></span>
+        </div>
+        <ul class="punch-list" id="todayList"></ul>
+      </div>
+    </section>
+
+    <section id="view-dias" class="view hidden">
+      <div class="card-toolbar">
+        <div class="month-nav">
+          <button class="icon-btn" id="daysPrev" type="button" aria-label="Mês anterior">‹</button>
+          <strong id="daysMonthLabel">—</strong>
+          <button class="icon-btn" id="daysNext" type="button" aria-label="Próximo mês">›</button>
+        </div>
+        <span class="toolbar-note">Lance os horários dia a dia. A impressão fica só para o fechamento do mês.</span>
+      </div>
+      <div id="daysRoot"></div>
+    </section>
+
+    <section id="view-card" class="view hidden">
+      <div class="card-toolbar">
+        <div class="month-nav">
+          <button class="icon-btn" id="prevMonth" type="button" aria-label="Mês anterior">‹</button>
+          <strong id="cardMonthLabel">—</strong>
+          <button class="icon-btn" id="nextMonth" type="button" aria-label="Próximo mês">›</button>
+        </div>
+        <div class="toolbar-actions">
+          <label class="checkbox"><input type="checkbox" id="includeProof" checked /> Comprovante de localização</label>
+          <button class="btn primary" id="printBtn" type="button">Imprimir cartão do mês</button>
+        </div>
+      </div>
+      <div id="cardRoot"></div>
+    </section>
+
+    <section id="view-settings" class="view hidden">
+      <form class="panel form" id="settingsForm">
+        <h2>Local de trabalho</h2>
+        <p class="form-help">O ponto só é liberado quando o GPS indica que você está dentro do raio abaixo.</p>
+        <label>Nome do local <input id="cfg-place" type="text" autocomplete="off" /></label>
+        <div class="row">
+          <label>Latitude <input id="cfg-lat" type="text" inputmode="decimal" autocomplete="off" placeholder="-23.550520" /></label>
+          <label>Longitude <input id="cfg-lng" type="text" inputmode="decimal" autocomplete="off" placeholder="-46.633308" /></label>
+        </div>
+        <label>Raio permitido (metros) <input id="cfg-radius" type="number" min="10" max="10000" step="10" /></label>
+        <button class="btn ghost" id="useGps" type="button">Usar minha localização atual</button>
+        <p class="hint" id="gpsHint">A localização do navegador exige HTTPS ou localhost.</p>
+
+        <h2>Dados do cartão</h2>
+        <label>Empresa <input id="cfg-company" type="text" autocomplete="off" /></label>
+        <label>Nome <input id="cfg-employee" type="text" autocomplete="off" /></label>
+        <div class="row">
+          <label>Matrícula <input id="cfg-matricula" type="text" autocomplete="off" /></label>
+          <label>Função <input id="cfg-role" type="text" autocomplete="off" /></label>
+        </div>
+        <label>Setor <input id="cfg-sector" type="text" autocomplete="off" /></label>
+        <div class="row">
+          <label>Entrada prevista <input id="cfg-start" type="time" /></label>
+          <label>Saída prevista <input id="cfg-end" type="time" /></label>
+        </div>
+        <div class="row">
+          <label>Início do intervalo <input id="cfg-break-start" type="time" /></label>
+          <label>Fim do intervalo <input id="cfg-break-end" type="time" /></label>
+        </div>
+        <label>Escala <input id="cfg-schedule" type="text" autocomplete="off" /></label>
+        <button class="btn primary" type="submit">Salvar configurações</button>
+      </form>
+    </section>
+  </main>
+
+  <nav class="tabs" aria-label="Navegação">
+    <button class="tab active" type="button" data-view="punch">Ponto</button>
+    <button class="tab" type="button" data-view="dias">Dias</button>
+    <button class="tab" type="button" data-view="card">Cartão</button>
+    <button class="tab" type="button" data-view="settings">Ajustes</button>
+  </nav>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
